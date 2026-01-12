@@ -4,6 +4,7 @@ import org.bouncycastle.util.Strings;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -75,18 +76,82 @@ public void beforeClass(){
         //switch vao tap cuoi cung con lai
         driver.switchTo().window(githubWindowID);
     }
-        // Dung voi tu 3 tab/window dung =2 van dung => dung luon cai nay
+        // chuyen 3 ham dung chung xuong cuoi cung ko nam trong test nao de dung chung
+
+    @Test
+    public void TC_02_TechPanda() throws InterruptedException {
+       driver.get("https://live.techpanda.org/");
+       driver.findElement(By.xpath("//a[text()='Mobile']")).click();
+
+       // Click add to compare o san pham Sony Xperia
+        driver.findElement(By.xpath("//a[text()='Sony Xperia']/parent::h2/"
+                + "following-sibling::div[@class='actions']//a[@class='link-compare']")).click();
+        Thread.sleep(2000);
+
+        Assert.assertEquals(driver.findElement(By.cssSelector("li.success-msg span")).getText(),
+                "The product Sony Xperia has been added to comparison list.");
+
+        // Click add to compare o san pham samsung
+        driver.findElement(By.xpath("//a[text()='Samsung Galaxy']/parent::h2/"
+                + "following-sibling::div[@class='actions']//a[@class='link-compare']")).click();
+        Thread.sleep(2000);
+        Assert.assertEquals(driver.findElement(By.cssSelector("li.success-msg span")).getText(),
+                "The product Samsung Galaxy has been added to comparison list.");
+
+        driver.findElement(By.cssSelector("button[title='Compare']")).click();
+        Thread.sleep(2000);
+
+        // dung title de switch
+        switchToWindowByTitle("Products Comparison List - Magento Commerce");
+
+        Thread.sleep(2000);
+
+        // verify URL cua tab compare
+        Assert.assertEquals(driver.getCurrentUrl(), "https://live.techpanda.org/index.php/catalog/product_compare/index/");
+
+        // click button Close
+        driver.findElement(By.cssSelector("button[title='Close Window']")).click();
+        Thread.sleep(2000);
+        // switch driver ve trang mobille
+        switchToWindowByTitle("Mobile");
+        // click button Clear All
+        driver.findElement(By.xpath("//a[text()='Clear All']")).click();
+        Thread.sleep(2000);
+
+          // verify show alert
+        Assert.assertEquals(driver.switchTo().alert().getText(),
+                "Are you sure you would like to remove all products from your comparison?");
+        // Click OK tren alert
+        driver.switchTo().alert().accept();
+        Thread.sleep(2000);
+
+        // Verify thong bao sau khi OK tren alert
+        Assert.assertEquals(driver.findElement(By.cssSelector("li.success-msg span")).getText(),
+                "The comparison list was cleared.");
+
+    }
+
+
+
+
+
+    @Test
+    public void TC_03_() {
+
+
+    }
+
     private void closeWindowWithoutParent(String githubWindowID) throws InterruptedException {
         Set <String> allWindowIDs = driver.getWindowHandles();
         //Dung vong lap duyet qua tung ID
         for (String id : allWindowIDs){
-                if (!id.equals(githubWindowID)){
-                    // id ko dund thi switch vao window do va close
-                    driver.switchTo().window(id);
-                    Thread.sleep(3000);
-                    driver.close();
-                }
+            if (!id.equals(githubWindowID)){
+                // id ko dund thi switch vao window do va close
+                driver.switchTo().window(id);
+                Thread.sleep(3000);
+                driver.close();
             }
+        }
     }
     // Dung voi tu 3 tab/window dung =2 van dung => dung luon cai nay
     private void switchToWindowByTitle(String expectedpageTitle) {
@@ -108,7 +173,7 @@ public void beforeClass(){
 
     // Chi dung TH handle voi 2 tab/ window, nhieu hon la sai
     private void switchToWindowById(String windowId) {
-       //Lay ra tat ca window/ tab hien tai
+        //Lay ra tat ca window/ tab hien tai
         Set<String> allWindowIDs = driver.getWindowHandles();
         // Duyet lan luot tung id mot
         for (String id : allWindowIDs) {
@@ -118,17 +183,6 @@ public void beforeClass(){
                 driver.switchTo().window(id);
             }
         }
-    }
-
-    @Test
-    public void TC_02_() {
-
-    }
-
-    @Test
-    public void TC_03_() {
-
-
     }
     @AfterClass
     public void afterClass() {
